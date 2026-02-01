@@ -6,61 +6,57 @@ import { MapPin, Clock } from "lucide-react";
 import { itineraryData, ItineraryItem } from "../data/itinerary";
 import { clsx } from "clsx";
 
+const CARD_COLORS = [
+    "bg-[#FFDEA6]", // Soft Yellow/Orange
+    "bg-[#C1EFFF]", // Soft Blue
+    "bg-[#D0F4CA]", // Soft Green
+    "bg-[#FDCFE8]", // Soft Pink
+];
+
 export default function ItineraryDisplay() {
     const [selectedDayIndex, setSelectedDayIndex] = useState(0);
     const selectedDay = itineraryData[selectedDayIndex];
 
     return (
-        <div className="w-full max-w-md mx-auto bg-white/80 backdrop-blur-md rounded-3xl shadow-xl overflow-hidden border border-white/50">
-            {/* Header / Tabs - Made Larger */}
-            <div className="flex bg-rose-100/50 p-3 gap-3">
+        <div className="w-full max-w-lg mx-auto">
+            {/* Header / Tabs - EXTRA LARGE & COLORFUL */}
+            <div className="flex justify-center gap-4 mb-8">
                 {itineraryData.map((day, idx) => (
                     <button
                         key={day.day}
                         onClick={() => setSelectedDayIndex(idx)}
                         className={clsx(
-                            "flex-1 py-4 rounded-2xl text-lg font-bold transition-all duration-300 relative",
+                            "flex-1 py-6 rounded-3xl text-2xl font-black transition-all duration-300 relative transform shadow-lg",
                             selectedDayIndex === idx
-                                ? "text-rose-600 bg-white shadow-md scale-105 z-10"
-                                : "text-rose-400 hover:bg-white/50"
+                                ? "text-white bg-[#FF9F9F] scale-110 -translate-y-2 z-10 rotate-1"
+                                : "text-gray-400 bg-white hover:bg-gray-50 hover:-translate-y-1 hover:rotate-[-1deg]"
                         )}
                     >
-                        <span className="relative z-10">{day.date}</span>
-                        {selectedDayIndex === idx && (
-                            <motion.div
-                                layoutId="activeTab"
-                                className="absolute inset-0 bg-white rounded-2xl shadow-sm"
-                                initial={false}
-                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                            />
-                        )}
+                        <span className="relative z-10 drop-shadow-sm">{day.date}</span>
                     </button>
                 ))}
             </div>
 
             {/* Content */}
-            <div className="p-6 min-h-[500px] bg-gradient-to-b from-white to-rose-50/30">
+            <div className="p-4">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={selectedDayIndex}
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.3 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.4 }}
                         className="flex flex-col items-center"
                     >
                         <div className="text-center mb-10">
-                            <h2 className="text-3xl font-black text-rose-500 mb-2">
+                            <h2 className="text-3xl font-black text-[#5C5C5C] mb-2 tracking-wide">
                                 {selectedDay.title}
                             </h2>
-                            <p className="text-rose-400 text-lg font-medium">
-                                {selectedDay.day}
-                            </p>
                         </div>
 
-                        <div className="space-y-8 w-full">
+                        <div className="space-y-6 w-full">
                             {selectedDay.items.map((item, idx) => (
-                                <TimelineItem key={idx} item={item} />
+                                <TimelineItem key={idx} item={item} index={idx} />
                             ))}
                         </div>
                     </motion.div>
@@ -70,41 +66,47 @@ export default function ItineraryDisplay() {
     );
 }
 
-function TimelineItem({ item }: { item: ItineraryItem }) {
+function TimelineItem({ item, index }: { item: ItineraryItem; index: number }) {
     const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
         item.locationQuery || item.title
     )}`;
 
-    return (
-        <div className="relative flex flex-col items-center text-center group w-full">
-            {/* Removed the vertical line for purer centered look as requested, or keep it subtle? User said "全部自體置中" (All self-centered). I will make the cards centered blocks. */}
+    const bgColor = CARD_COLORS[index % CARD_COLORS.length];
 
+    return (
+        <div className="w-full">
             <a
                 href={item.locationQuery ? mapUrl : "#"}
                 target={item.locationQuery ? "_blank" : "_self"}
                 rel="noopener noreferrer"
-                className="w-full transform transition-all duration-300 hover:scale-[1.02]"
+                className="block w-full transform transition-all duration-300 hover:scale-[1.03] active:scale-95"
             >
-                <div className="bg-white p-6 rounded-3xl shadow-sm border-2 border-rose-100 group-hover:shadow-lg group-hover:border-rose-300 transition-all flex flex-col items-center">
+                <div className={clsx(
+                    "p-8 rounded-[2rem] shadow-sm flex flex-col items-center text-center relative overflow-hidden",
+                    bgColor
+                )}>
+                    {/* Decorative circle */}
+                    <div className="absolute top-0 left-0 w-24 h-24 bg-white/20 rounded-full -translate-x-12 -translate-y-12"></div>
+                    <div className="absolute bottom-0 right-0 w-32 h-32 bg-white/20 rounded-full translate-x-10 translate-y-10"></div>
 
-                    <div className="inline-flex items-center text-sm font-bold text-rose-500 bg-rose-50 px-4 py-1.5 rounded-full mb-3">
-                        <Clock size={16} className="mr-2" />
+                    <div className="inline-flex items-center text-lg font-black text-white bg-black/10 px-6 py-2 rounded-full mb-4 backdrop-blur-sm">
+                        <Clock size={18} className="mr-2" />
                         {item.time}
                     </div>
 
-                    <h3 className="text-2xl font-black text-gray-800 mb-2 leading-tight group-hover:text-rose-600 transition-colors">
+                    <h3 className="text-3xl font-black text-[#4A4A4A] mb-3 leading-tight drop-shadow-sm">
                         {item.title}
                     </h3>
 
                     {item.locationQuery && (
-                        <div className="flex items-center text-rose-300 text-xs mb-3">
-                            <MapPin size={14} className="mr-1" />
-                            <span>點擊查看地圖</span>
+                        <div className="flex items-center text-gray-600/70 text-sm mb-4 font-bold">
+                            <MapPin size={16} className="mr-1" />
+                            <span>MAP</span>
                         </div>
                     )}
 
                     {item.note && (
-                        <p className="text-base text-gray-600 bg-gray-50 px-4 py-2 rounded-xl mt-1 w-full text-center">
+                        <p className="text-xl text-[#5a5a5a] font-bold bg-white/40 px-6 py-3 rounded-2xl w-full text-center">
                             {item.note}
                         </p>
                     )}
